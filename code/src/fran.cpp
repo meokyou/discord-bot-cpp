@@ -8,7 +8,7 @@ int main(int argc, const char *argv[])
 
     dpp::commandhandler command_handler(&bot);
 
-    command_hander.add_prefix(".").add_prefix("/");
+    command_handler.add_prefix(".").add_prefix("/");
 
     std::shared_ptr<spdlog::logger> log;
     spdlog::init_thread_pool(8192, 2);
@@ -47,7 +47,7 @@ int main(int argc, const char *argv[])
         }
     });
 
-    bot.on_ready[&bot](const dpp::ready_t & event) {
+    bot.on_ready([&command_handler, &bot](const dpp::ready_t & event) {
 
         std::cout << "Logged in as " << bot.me.username << "!\n";
 
@@ -70,46 +70,6 @@ int main(int argc, const char *argv[])
             "Test server ping"
         );
 
-        command_handler.add_command(
-
-            "developer_info",
-
-            {
-                {"testparameter", dpp::param_info(dpp::pt_string, true, "Optional test parameter") }
-            },
-
-            [&command_hander](const std::string& command, const dpp::parameter_list_t& parameters, dpp::command_source src) {
-                dpp::embed embed = dpp::embed().
-                    set_color(0x0099ff).
-                    set_title("Some name").
-                    set_url("https://dpp.dev/").
-                    set_author("Some name", "https://dpp.dev/", "https://dpp.dev/DPP-Logo.png").
-                    set_description("Some description here").
-                    set_thumbnail("https://dpp.dev/DPP-Logo.png").
-                    add_field(
-                        "Regular field title",
-                        "Some value here"
-                    ).
-                    add_field(
-                        "Inline field title",
-                        "Some value here",
-                        true
-                    ).
-                    add_field(
-                        "Inline field title",
-                        "Some value here",
-                        true
-                    ).
-                    set_image("https://dpp.dev/DPP-Logo.png").
-                    set_footer(dpp::embed_footer().set_text("Some footer text here").set_icon("https://dpp.dev/DPP-Logo.png")).
-                    set_timestamp(time(0));
-                    
-                command_handler.reply(dpp::message(event.msg.channel_id, embed).set_reference(event.msg.id));
-            },
-
-            "Share embed of developer information"
-        );
-
         command_handler.register_commands();
         
         bot.global_command_create(dpp::slashcommand().set_name("help")
@@ -121,7 +81,7 @@ int main(int argc, const char *argv[])
 
     bot.on_interaction_create([&bot](const dpp::interaction_create_t & event) {
         if (event.command.type == dpp::it_application_command) {
-            dpp:command_interaction cmd_data = std::get<dpp::command_interaction>(event.command.data);
+            dpp::command_interaction cmd_data = std::get<dpp::command_interaction>(event.command.data);
 
             if (cmd_data.name == "help") {
 
@@ -138,3 +98,4 @@ int main(int argc, const char *argv[])
 
     return 0;
 }
+
